@@ -6,9 +6,9 @@ namespace Badcfe;
 
 class FancySessionCookies
 {
-    public static function setName(bool $isSecure, string $path): void
+    public static function setName(bool $isSecure, string $path, string $domain): void
     {
-        session_name(self::getPrefixedName(self::getName(), $isSecure, $path));
+        session_name(self::getPrefixedName(self::getName(), $isSecure, $path, $domain));
     }
 
     public static function getName(): string
@@ -17,10 +17,10 @@ class FancySessionCookies
         return $sessionName === false ? "" : $sessionName;
     }
 
-    private static function getPrefixedName(string $name, bool $isSecure, string $path): string
+    private static function getPrefixedName(string $name, bool $isSecure, string $path, string $domain): string
     {
         if ((strpos($name, "__Host-") || strpos($name, "__Secure-")) === false) {
-            if ($isSecure && $path == "/") {
+            if ($isSecure && $path == "/" && $domain === "") {
                 return "__Host-" . $name;
             } elseif ($isSecure) {
                 return "__Secure-" . $name;
@@ -41,6 +41,10 @@ class FancySessionCookies
     public static function buildCookieString(string $name, string|false $id, array $params, SameSite $sameSite): string
     {
         $cookieString = sprintf("%s=%s;", $name, $id);
+        $domain = $params['domain'] ?? "";
+        if (is_string($domain) && $domain !== "") {
+            $cookieString .= " Domain=$domain;";
+        }
         $secure = $params['secure'];
         if ($secure === true) {
             $cookieString .= " Secure;";
@@ -68,19 +72,20 @@ class FancySessionCookies
     public static function startNewSession(): void
     {
         $params  = session_get_cookie_params();
-        self::setName($params['secure'], $params['path']);
-        session_start();
-        $sameSite = SameSite::tryFrom($params['samesite']) ?? SameSite::Lax;
-        header(
-            sprintf(
-                'Set-Cookie: %s',
-                self::buildCookieString(
-                    self::getName(),
-                    session_id(),
-                    $params,
-                    $sameSite
+        self::setName($params['secure'], $params['path'], $params['domain']);
+        if (session_start()) {
+            $sameSite = SameSite::tryFrom($params['samesite']) ?? SameSite::Lax;
+            header(
+                sprintf(
+                    'Set-Cookie: %s',
+                    self::buildCookieString(
+                        self::getName(),
+                        session_id(),
+                        $params,
+                        $sameSite
+                    )
                 )
-            )
-        );
+            );
+        }
     }
 }
