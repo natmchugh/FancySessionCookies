@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Badcfe;
@@ -7,12 +8,13 @@ class FancySessionCookies
 {
     public static function setName(bool $isSecure, string $path): void
     {
-        session_name(self::getPrefixedName(session_name(), $isSecure, $path));
+        session_name(self::getPrefixedName(self::getName(), $isSecure, $path));
     }
 
     public static function getName(): string
     {
-        return session_name();
+        $sessionName = session_name();
+        return $sessionName === false ? "" : $sessionName;
     }
 
     private static function getPrefixedName(string $name, bool $isSecure, string $path): string
@@ -27,6 +29,15 @@ class FancySessionCookies
         return $name;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param string $name
+     * @param string|false $id
+     * @param array<string, mixed> $params
+     * @param SameSite $sameSite
+     * @return string
+     */
     public static function buildCookieString(string $name, string|false $id, array $params, SameSite $sameSite): string
     {
         $cookieString = sprintf("%s=%s;", $name, $id);
@@ -35,11 +46,11 @@ class FancySessionCookies
             $cookieString .= " Secure;";
         }
         $path = $params['path'];
-        if ($path !== "") {
+        if (is_string($path) && $path !== "") {
             $cookieString .= " Path=$path;";
         }
         $lifetime = $params['lifetime'];
-        if ($lifetime > 0) {
+        if (is_int($lifetime) && $lifetime > 0) {
             $cookieString .= " Max-Age=$lifetime;";
         }
         $httponly = $params['httponly'];
@@ -61,7 +72,8 @@ class FancySessionCookies
         session_start();
         $sameSite = SameSite::tryFrom($params['samesite']) ?? SameSite::Lax;
         header(
-                sprintf('Set-Cookie: %s',
+            sprintf(
+                'Set-Cookie: %s',
                 self::buildCookieString(
                     self::getName(),
                     session_id(),
