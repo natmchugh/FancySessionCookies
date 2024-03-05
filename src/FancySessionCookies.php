@@ -6,12 +6,12 @@ namespace Badcfe;
 
 class FancySessionCookies
 {
-    public static function setName(bool $isSecure, string $path, string $domain): void
+    private static function setName(bool $isSecure, string $path, string $domain): void
     {
         session_name(self::getPrefixedName(self::getName(), $isSecure, $path, $domain));
     }
 
-    public static function getName(): string
+    private static function getName(): string
     {
         $sessionName = session_name();
         return $sessionName === false ? "" : $sessionName;
@@ -38,7 +38,7 @@ class FancySessionCookies
      * @param SameSite $sameSite
      * @return string
      */
-    public static function buildCookieString(string $name, string|false $id, array $params, SameSite $sameSite): string
+    private static function buildCookieString(string $name, string|false $id, array $params, SameSite $sameSite, bool $partitioned): string
     {
         $cookieString = sprintf("%s=%s;", $name, $id);
         $domain = $params['domain'] ?? "";
@@ -62,14 +62,17 @@ class FancySessionCookies
             $cookieString .= " HttpOnly;";
         }
         if ($sameSite === SameSite::None) {
-            $cookieString .= " SameSite=None; Partitioned;";
+            $cookieString .= " SameSite=None;";
+            if ($partitioned) {
+                $cookieString .= " Partitioned;";
+            }
         } else {
             $cookieString .= " SameSite=Lax;";
         }
         return $cookieString;
     }
 
-    public static function startNewSession(): void
+    public static function startNewSession(bool $partitioned = true): void
     {
         $params  = session_get_cookie_params();
         self::setName($params['secure'], $params['path'], $params['domain']);
@@ -82,7 +85,8 @@ class FancySessionCookies
                         self::getName(),
                         session_id(),
                         $params,
-                        $sameSite
+                        $sameSite,
+                        $partitioned
                     )
                 )
             );
