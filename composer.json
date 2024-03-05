@@ -1,0 +1,26 @@
+{
+    "name": "badcfe/partitioned-sessions",
+    "type": "library",
+    "description": "",
+    "keywords": ["cookie", "third", "party", "samesite", "compatibility", "partitioned", "sessions", "CHIPS"],
+    "homepage": "https://github.com/badcfe/FancySessionCookiess",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nathaniel McHugh",
+            "email": "nat@fishtrap.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=7.1"
+    },
+    "autoload": {
+        "psr-4": { 
+            "Badcfe\\":  "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require-dev": {
+        "phpunit/phpunit": "10.5.x-dev"
+    }
+}
