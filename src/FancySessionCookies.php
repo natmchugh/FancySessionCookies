@@ -35,7 +35,6 @@ class FancySessionCookies
     }
 
     /**
-     * Undocumented function
      *
      * @param string $name
      * @param string|false $id
@@ -43,7 +42,7 @@ class FancySessionCookies
      * @param SameSite $sameSite
      * @return string
      */
-    private static function buildCookieString(string $name, string|false $id, array $params, SameSite $sameSite, bool $partitioned): string
+    private static function buildCookieString(string $name, string|false $id, array $params, ?SameSite $sameSite, bool $partitioned): string
     {
         $cookieString = sprintf("%s=%s;", $name, $id);
         $domain = $params['domain'] ?? "";
@@ -66,13 +65,11 @@ class FancySessionCookies
         if ($httponly === true) {
             $cookieString .= " HttpOnly;";
         }
-        if ($sameSite === SameSite::None) {
-            $cookieString .= " SameSite=None;";
-            if ($partitioned) {
-                $cookieString .= " Partitioned;";
-            }
-        } else {
+        if ($sameSite instanceof SameSite) {
             $cookieString .= " SameSite={$sameSite->value};";
+        }
+        if ($partitioned === true && $sameSite === SameSite::None) {
+            $cookieString .= " Partitioned;";
         }
         return $cookieString;
     }
@@ -82,7 +79,7 @@ class FancySessionCookies
         $params  = session_get_cookie_params();
         self::setName($params['secure'], $params['path'], $params['domain']);
         if (session_start()) {
-            $sameSite = SameSite::tryFrom($params['samesite']) ?? SameSite::Lax;
+            $sameSite = SameSite::tryFrom($params['samesite']);
             header(
                 sprintf(
                     'Set-Cookie: %s',

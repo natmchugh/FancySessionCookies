@@ -108,4 +108,22 @@ class FancySessionCookiesTest extends TestCase
         $expected = "Set-Cookie: __Host-session=" . session_id() . "; Secure; Path=/; HttpOnly; SameSite=Strict;";
         $this->assertSame($expected, $cookieHeaders[0]);
     }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testStartNewSessionNoSameSite(): void
+    {
+        session_name("session");
+        session_set_cookie_params([
+            "path" => "/",
+            "secure" => true,
+            "httponly" => true,
+        ]);
+        FancySessionCookies::startNewSession();
+        $cookieHeaders = $this->getCookieHeaders();
+        header_remove();
+        $expected = "Set-Cookie: __Host-session=" . session_id() . "; Secure; Path=/; HttpOnly;";
+        $this->assertSame($expected, $cookieHeaders[0]);
+    }
 }
