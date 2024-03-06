@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 
 use Badcfe\FancySessionCookies;
-use Badcfe\SameSite;
 use PHPUnit\Framework\TestCase;
 
 class FancySessionCookiesTest extends TestCase
@@ -52,7 +51,7 @@ class FancySessionCookiesTest extends TestCase
     /**
      * @runInSeparateProcess
      */
-    public function testSetThirdPartyCookiePartitioned(): void
+    public function testSetThirdPartyCookieDefaultPartitioned(): void
     {
         session_name("session");
         session_set_cookie_params([
@@ -76,13 +75,13 @@ class FancySessionCookiesTest extends TestCase
     public function testStartNewFirstPartySession(): void
     {
         session_name("session");
-        ini_set('session.cookie_samesite', "Lax");
         session_set_cookie_params([
             "lifetime" => 7776000,
             "path" => "/",
             "domain" => "news.site",
             "secure" => true,
             "httponly" => true,
+            "samesite" => "Lax"
         ]);
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();

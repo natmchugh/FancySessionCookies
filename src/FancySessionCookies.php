@@ -14,13 +14,18 @@ class FancySessionCookies
     private static function getName(): string
     {
         $sessionName = session_name();
-        return $sessionName === false ? "" : $sessionName;
+        return is_string($sessionName) ? $sessionName : "";
+    }
+
+    private static function alreadyContainsPrefix(string $name): bool
+    {
+        return strpos($name, "__Host-") === 0 || strpos($name, "__Secure-") === 0;
     }
 
     private static function getPrefixedName(string $name, bool $isSecure, string $path, string $domain): string
     {
-        if ((strpos($name, "__Host-") || strpos($name, "__Secure-")) === false) {
-            if ($isSecure && $path == "/" && $domain === "") {
+        if (!self::alreadyContainsPrefix($name)) {
+            if ($isSecure && $path === "/" && $domain === "") {
                 return "__Host-" . $name;
             } elseif ($isSecure) {
                 return "__Secure-" . $name;
@@ -67,7 +72,7 @@ class FancySessionCookies
                 $cookieString .= " Partitioned;";
             }
         } else {
-            $cookieString .= " SameSite=Lax;";
+            $cookieString .= " SameSite={$sameSite->value};";
         }
         return $cookieString;
     }
