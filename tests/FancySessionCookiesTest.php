@@ -44,8 +44,8 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession(false);
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "Set-Cookie: __Secure-session=" . session_id() . "; Domain=news.site; Secure; Path=/; Max-Age=7776000; HttpOnly; SameSite=None;";
-        $this->assertSame($expected, $cookieHeaders[0]);
+        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=None/";
+        $this->assertMatchesRegularExpression($expected, $cookieHeaders[0]);
     }
 
     /**
@@ -65,8 +65,8 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "Set-Cookie: __Secure-session=" . session_id() . "; Domain=news.site; Secure; Path=/; Max-Age=7776000; HttpOnly; SameSite=None; Partitioned;";
-        $this->assertSame($expected, $cookieHeaders[0]);
+        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w*), (\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=None; Partitioned/";
+        $this->assertMatchesRegularExpression($expected, $cookieHeaders[0]);
     }
 
     /**
@@ -86,8 +86,8 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "Set-Cookie: __Secure-session=" . session_id() . "; Domain=news.site; Secure; Path=/; Max-Age=7776000; HttpOnly; SameSite=Lax;";
-        $this->assertSame($expected, $cookieHeaders[0]);
+        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=Lax/";
+        $this->assertMatchesRegularExpression($expected, $cookieHeaders[0]);
     }
 
     /**
@@ -105,7 +105,7 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "Set-Cookie: __Host-session=" . session_id() . "; Secure; Path=/; HttpOnly; SameSite=Strict;";
+        $expected = "Set-Cookie: __Host-session=" . session_id() . "; path=/; secure; HttpOnly; SameSite=Strict";
         $this->assertSame($expected, $cookieHeaders[0]);
     }
 
@@ -123,7 +123,7 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "Set-Cookie: __Host-session=" . session_id() . "; Secure; Path=/; HttpOnly;";
+        $expected = "Set-Cookie: __Host-session=" . session_id() . "; path=/; secure; HttpOnly";
         $this->assertSame($expected, $cookieHeaders[0]);
     }
 }

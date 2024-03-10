@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Badcfe;
 
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeInterface;
+
 class FancySessionCookies
 {
     private static function setName(bool $isSecure, string $path, string $domain): void
@@ -44,42 +48,46 @@ class FancySessionCookies
      */
     private static function buildCookieString(string $name, string|false $id, array $params, ?SameSite $sameSite, bool $partitioned): string
     {
-        $cookieString = sprintf("%s=%s;", $name, $id);
-        $domain = $params['domain'] ?? "";
-        if (is_string($domain) && $domain !== "") {
-            $cookieString .= " Domain=$domain;";
-        }
-        $secure = $params['secure'];
-        if ($secure === true) {
-            $cookieString .= " Secure;";
+        $cookieString = sprintf("%s=%s", $name, $id);
+        $lifetime = $params['lifetime'];
+        if (is_int($lifetime) && $lifetime > 0) {
+            $date = new DateTimeImmutable();
+            $newDate = $date->add(new DateInterval('PT' . $lifetime . "S"));
+            $cookieString .= "; expires=".$newDate->format(DateTimeInterface::COOKIE);
+            $cookieString .= "; Max-Age=$lifetime";
         }
         $path = $params['path'];
         if (is_string($path) && $path !== "") {
-            $cookieString .= " Path=$path;";
+            $cookieString .= "; path=$path";
         }
-        $lifetime = $params['lifetime'];
-        if (is_int($lifetime) && $lifetime > 0) {
-            $cookieString .= " Max-Age=$lifetime;";
+        $domain = $params['domain'] ?? "";
+        if (is_string($domain) && $domain !== "") {
+            $cookieString .= "; domain=$domain";
+        }
+        $secure = $params['secure'];
+        if ($secure === true) {
+            $cookieString .= "; secure";
         }
         $httponly = $params['httponly'];
         if ($httponly === true) {
-            $cookieString .= " HttpOnly;";
+            $cookieString .= "; HttpOnly";
         }
         if ($sameSite instanceof SameSite) {
-            $cookieString .= " SameSite={$sameSite->value};";
+            $cookieString .= "; SameSite={$sameSite->value}";
         }
         if ($partitioned === true && $sameSite === SameSite::None) {
-            $cookieString .= " Partitioned;";
+            $cookieString .= "; Partitioned";
         }
         return $cookieString;
     }
 
-    public static function startNewSession(bool $partitioned = true): void
+    public static function startNewSession(bool $partitionedIfThirdParty = true): void
     {
         $params  = session_get_cookie_params();
         self::setName($params['secure'], $params['path'], $params['domain']);
-        if (session_start()) {
-            $sameSite = SameSite::tryFrom($params['samesite']);
+        $sameSite = SameSite::tryFrom($params['samesite']);
+        $partitioned = $partitionedIfThirdParty && $sameSite === SameSite::None;
+        if (session_start() && $partitioned) {
             header(
                 sprintf(
                     'Set-Cookie: %s',
