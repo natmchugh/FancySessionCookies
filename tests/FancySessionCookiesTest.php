@@ -44,7 +44,7 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession(false);
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=None/";
+        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=None/";
         $this->assertMatchesRegularExpression($expected, $cookieHeaders[0]);
     }
 
@@ -86,7 +86,7 @@ class FancySessionCookiesTest extends TestCase
         FancySessionCookies::startNewSession();
         $cookieHeaders = $this->getCookieHeaders();
         header_remove();
-        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=Lax/";
+        $expected = "/Set-Cookie: __Secure-session=" . session_id() . "; expires=(\w{3}), (\d{2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) (\w{3}); Max-Age=7776000; path=\/; domain=news.site; secure; HttpOnly; SameSite=Lax/";
         $this->assertMatchesRegularExpression($expected, $cookieHeaders[0]);
     }
 

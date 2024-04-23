@@ -3,7 +3,7 @@
     "type": "library",
     "description": "",
     "keywords": ["cookie", "third", "party", "samesite", "compatibility", "partitioned", "sessions", "CHIPS"],
-    "homepage": "https://github.com/badcfe/FancySessionCookiess",
+    "homepage": "https://github.com/badcfe/FancySessionCookies",
     "license": "MIT",
     "authors": [
         {
